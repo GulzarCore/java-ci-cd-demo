@@ -8,10 +8,8 @@ public class CalculatorTest {
 
     @Test
     public void testAdd() {
-        assertEquals(5, calc.add(2, 3));  // Change this line to:
-        assertEquals(6, calc.add(2, 3));  // Make it wrong
+        assertEquals(5, calc.add(2, 3));
     }
-
 
     @Test
     public void testSubtract() {
