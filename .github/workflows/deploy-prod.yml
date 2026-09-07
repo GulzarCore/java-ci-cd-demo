@@ -1,55 +1,67 @@
-name: Deploy to Production
+name: Deploy to Production 
 
 on:
-  workflow_dispatch:
-    inputs:
-      image_tag:
-        description: 'Docker image tag (e.g., latest, v1.0.0)'
-        required: true
-        default: 'latest'
+ workflow_dispatch:
+  inputs:
+    image_tag:
+      description: 'Docker image tag ( e.g., latest, v1.0.0)'
+      required: true 
+      default: 'latest'
 
-jobs:
+jobs: 
   deploy:
-    runs-on: ubuntu-latest
-    environment: production
-    
+    runs-on: ubuntu-latest  
+    environment: production 
+
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Log in to GHCR
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Pull image from GHCR
+      uses: action/checkout@v4 
+
+    - name: Pull image from GHCR 
       run: |
-        docker pull ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:${{ github.event.inputs.image_tag }}
-    
-    - name: Deploy to production
+        docker pull ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:${{ github.event.input.image_tag}}
+
+    - name: Deploy to production 
+      id: deploy
       run: |
-        echo "🚀 Deploying to production..."
-        echo "Image: ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:${{ github.event.inputs.image_tag }}"
-        echo "Tag: ${{ github.event.inputs.image_tag }}"
-        
-        # Stop old container
+        echo " Deploying to Production..."
+        echo "Image: ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:${{
+        github.event.inputs.image_tag }}"
+
+        # Stop Old Container
         docker stop java-ci-cd-demo-prod 2>/dev/null || true
         docker rm java-ci-cd-demo-prod 2>/dev/null || true
-        
-        # Start new container
+
+        # Start new Container 
         docker run -d \
           --name java-ci-cd-demo-prod \
           -p 9090:8080 \
-          ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:${{ github.event.inputs.image_tag }}
-        
-        echo "✅ Production deployment complete"
-        docker logs java-ci-cd-demo-prod
-    
-    - name: Health check
+          --health-cmd='curl -f http://localhost:8080/health || exit 1' \
+          --health-interval=30s \
+          --health-timeout=10s \
+          --health-retries=3 \
+          ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:${{
+          github.event.inputs.image_tag }}
+
+        echo "deployment_time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+        echo "deployment_tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+
+    - name: wait for health check 
       run: |
-        echo "Waiting for app to start..."
-        sleep 5
-        # Simple health check (adjust if your app has a health endpoint)
-        docker logs java-ci-cd-demo-prod || echo "Container check passed"
+        echo " waiting for app health Check... "
+        for i in {1..30}; do 
+          if docker exec java-ci-cd-demo-prod curl -f http://localhost:8080 > /dev/null 2>&1; then
+            echo " App is Healthy!"
+            exit 0
+          fi
+          echo "attemp $i/30..."
+          sleep 2
+        done 
+        echo "Health Check failed after 30 attempts"
+        exit 1
+
+    - name: Log Deloyment 
+      if: always()
+      run: |
+        echo "=== Deployment Report ===" >>> deployment.log
+        echo "Time: ${{ ste}}"

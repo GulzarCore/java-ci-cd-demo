@@ -1,0 +1,34 @@
+name: Production Health Check
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check production health
+      run: |
+        echo "🏥 Checking production health..."
+        
+        # This assumes your app is running on a server accessible from GitHub
+        # For local testing, this will skip
+        
+        HEALTH_URL="http://localhost:9090/health"
+        
+        # Simulate health check (in real deployment, this calls your actual server)
+        echo "Health endpoint: $HEALTH_URL"
+        echo "⚠️  Note: Local testing cannot reach localhost"
+        echo "In production, replace with your actual deployment URL"
+    
+    - name: Log health status
+      run: |
+        echo "Production Status:"
+        echo "- App: java-ci-cd-demo"
+        echo "- Port: 9090"
+        echo "- Health endpoint: /health"
+        echo "- Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
