@@ -46,3 +46,11 @@ jobs:
           tags: ghcr.io/gulzarcore/java-ci-cd-demo:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      
+      - name: Deploy to staging
+        if: github.ref == 'ref/heads/main' && github.event_name == 'push'
+        run: |
+          echo "Omage pushed to ghcr"
+          echo "Staging deployment url would be: https://your-staging-app.render.com"
+          echo "Image: ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:latest"
+          
