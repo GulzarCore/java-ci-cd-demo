@@ -1,0 +1,48 @@
+name: Send Notifications
+
+on:
+  workflow_run:
+    workflows: ["Build and Push", "Deploy to Production", "Rollback Production"]
+    types: [completed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download workflow artifact
+      uses: actions/github-script@v7
+      with:
+        script: |
+          console.log("Workflow completed");
+          console.log("Event: ${{ github.event.workflow_run.name }}");
+          console.log("Conclusion: ${{ github.event.workflow_run.conclusion }}");
+    
+    - name: Notify on build success
+      if: github.event.workflow_run.name == 'Build and Push' && github.event.workflow_run.conclusion == 'success'
+      run: |
+        echo "📦 Build successful"
+        echo "Image: ghcr.io/${{ github.repository_owner }}/java-ci-cd-demo:${{ github.event.workflow_run.run_number }}"
+        echo "Ready for deployment"
+    
+    - name: Notify on build failure
+      if: github.event.workflow_run.name == 'Build and Push' && github.event.workflow_run.conclusion == 'failure'
+      run: |
+        echo "❌ Build failed"
+        echo "Check logs: ${{ github.event.workflow_run.html_url }}"
+    
+    - name: Notify on deployment
+      if: github.event.workflow_run.name == 'Deploy to Production' && github.event.workflow_run.conclusion == 'success'
+      run: |
+        echo "🚀 Production deployment successful"
+        echo "Deployed by: ${{ github.event.workflow_run.actor.login }}"
+        echo "Time: $(date)"
+    
+    - name: Notify on rollback
+      if: github.event.workflow_run.name == 'Rollback Production' && github.event.workflow_run.conclusion == 'success'
+      run: |
+        echo "⏮️ Rollback completed"
+        echo "Actor: ${{ github.event.workflow_run.actor.login }}"

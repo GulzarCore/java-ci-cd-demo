@@ -1,0 +1,59 @@
+name: Track Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment (staging, production)'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: 'Docker image tag'
+        required: true
+      status:
+        description: 'Deployment status'
+        required: true
+        type: choice
+        options:
+          - success
+          - failure
+          - rollback
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Record deployment
+      run: |
+        cat > deployment-log.txt << 'EOF'
+        ═══════════════════════════════════
+        DEPLOYMENT RECORD
+        ═══════════════════════════════════
+        Environment: ${{ github.event.inputs.environment }}
+        Image Tag: ${{ github.event.inputs.image_tag }}
+        Status: ${{ github.event.inputs.status }}
+        Actor: ${{ github.actor }}
+        Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+        Commit SHA: ${{ github.sha }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        ═══════════════════════════════════
+        EOF
+        cat deployment-log.txt
+    
+    - name: Upload deployment record
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-record-${{ github.event.inputs.environment }}-${{ github.run_number }}
+        path: deployment-log.txt
+        retention-days: 90
+    
+    - name: Create deployment annotation
+      run: |
+        echo "::notice title=Deployment Tracked::${{ github.event.inputs.environment }} - ${{ github.event.inputs.image_tag }} - ${{ github.event.inputs.status }}"

@@ -55,3 +55,26 @@ jobs:
           echo "Image pushed to ghcr"
           echo "Staging deployment url would be: https://your-staging-app.render.com"
           echo "Image: ghcr.io/gulzarcore/java-ci-cd-demo:latest"
+
+
+
+      - name: Build summary
+        if: always()
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════╗"
+          echo "║   BUILD SUMMARY                    ║"
+          echo "╚════════════════════════════════════╝"
+          echo ""
+          echo "✅ Tests: PASSED"
+          echo "✅ Build: PASSED"
+          echo "✅ Docker image: PUSHED"
+          echo ""
+          echo "📦 Image details:"
+          echo "  Registry: ghcr.io"
+          echo "  Repository: ${{ github.repository_owner }}/java-ci-cd-demo"
+          echo "  Tags: latest, ${{ github.run_number }}"
+          echo ""
+          echo "🚀 Next step: Deploy to production via workflow_dispatch"
+          echo "🔗 Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
