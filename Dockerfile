@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-slim 
+FROM eclipse-temurin:11-jre
 
 COPY target/java-ci-cd-demo-1.0-SNAPSHOT.jar /app.jar
 
