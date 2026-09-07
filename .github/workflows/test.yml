@@ -38,6 +38,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/GulzarCore/java-ci-cd-demo:latest
+        tags: ghcr.io/gulzarcore/java-ci-cd-demo:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
