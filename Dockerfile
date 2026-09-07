@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim as builder
+FROM eclipse-temurin:17-jre as builder
 WORKDIR /build
 COPY pom.xml .
 COPY src ./src
